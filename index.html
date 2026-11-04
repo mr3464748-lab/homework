@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة الحروف للأطفال 🦁</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts (Cairo & El Messiri) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Animate.css for fun animations -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #a8edf0 0%, #fed6e3 100%);
+            min-height: 100vh;
+            user-select: none;
+        }
+        .kid-card {
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.15);
+        }
+        .btn-kid {
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            box-shadow: 0 8px 0px rgba(0, 0, 0, 0.12);
+        }
+        .btn-kid:active:not(:disabled) {
+            transform: translateY(4px);
+            box-shadow: 0 4px 0px rgba(0, 0, 0, 0.12);
+        }
+        .btn-kid:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+        /* Bounce effect for image */
+        .bounce-img {
+            animation: bounce 2.5s infinite ease-in-out;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-8px) scale(1.03); }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4">
+
+    <!-- Main Game Container -->
+    <div class="w-full max-w-xl bg-white rounded-3xl kid-card border-4 border-amber-300 overflow-hidden relative my-auto animate__animated animate__zoomIn">
+        
+        <!-- Header Section -->
+        <div class="bg-amber-400 p-4 text-center relative border-b-4 border-amber-500 flex items-center justify-between px-6">
+            <div class="flex items-center gap-2">
+                <span class="text-3xl">🎈</span>
+                <h1 class="text-2xl md:text-3xl font-black text-amber-950">لُعْبَةُ الحُرُوفِ</h1>
+            </div>
+            
+            <!-- Sound Button for overall speech -->
+            <button id="speaker-btn" onclick="speakCurrentQuestion()" class="bg-white hover:bg-amber-100 text-amber-600 font-extrabold p-3 rounded-full shadow-md transition flex items-center gap-2 text-base active:scale-95 border-2 border-amber-300 relative">
+                <i id="speaker-icon" class="fa-solid fa-volume-high text-xl"></i>
+                <span class="hidden sm:inline">اسْتَمِعْ 🔊</span>
+                <span id="sound-wave" class="hidden absolute -top-1 -right-1 flex h-3 w-3">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+                </span>
+            </button>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="p-5 sm:p-8 text-center">
+            
+            <!-- Header Info: Question Counter & Score -->
+            <div class="flex justify-between items-center mb-4 text-lg font-black text-slate-700">
+                <span id="question-number" class="bg-amber-100 text-amber-800 px-4 py-1.5 rounded-full border-2 border-amber-300">
+                    السؤال 1 من 10
+                </span>
+                <span id="score-count" class="bg-emerald-100 text-emerald-800 px-4 py-1.5 rounded-full border-2 border-emerald-300">
+                    ⭐ النِّقَاطُ: 0
+                </span>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-slate-100 rounded-full h-4 mb-6 border-2 border-slate-200 overflow-hidden">
+                <div id="progress-bar" class="bg-gradient-to-r from-amber-400 to-orange-400 h-full w-10 transition-all duration-300 rounded-full"></div>
+            </div>
+
+            <!-- Question Title -->
+            <h2 id="question-text" class="text-2xl sm:text-3xl font-black text-slate-800 mb-4">
+                ما هُوَ الحَرْفُ الأَوَّلُ لِهَذِهِ الصُّورَةِ؟
+            </h2>
+
+            <!-- Center Image Container with enhanced styling -->
+            <div onclick="speakWord()" class="relative w-52 h-52 sm:w-60 sm:h-60 mx-auto mb-7 bg-gradient-to-b from-amber-50 to-orange-50 rounded-3xl border-4 border-amber-400 flex items-center justify-center p-4 shadow-lg cursor-pointer hover:scale-105 transition-transform" title="اضغط لسماع اسم الصورة 🔊">
+                <!-- Inline SVG wrapper for direct fallback rendering -->
+                <div id="image-container" class="w-full h-full flex items-center justify-center bounce-img drop-shadow-lg">
+                    <img id="image-display" src="" alt="صورة الكلمة" class="max-w-full max-h-full object-contain p-2" />
+                </div>
+                
+                <!-- Hint / Word Label -->
+                <div id="word-label" onclick="event.stopPropagation(); speakWord();" class="absolute -bottom-4 bg-amber-500 hover:bg-amber-600 text-white font-black px-6 py-1.5 rounded-full text-xl shadow-md border-2 border-white cursor-pointer active:scale-95 transition">
+                    أَسَد 🔊
+                </div>
+            </div>
+
+            <!-- 3 Letter Options Grid -->
+            <div id="options-container" class="grid grid-cols-3 gap-4 mb-6">
+                <!-- 3 Large Letter Buttons will be dynamically generated -->
+            </div>
+
+            <!-- Feedback Message -->
+            <div id="feedback-msg" class="h-10 text-xl font-black mb-2 flex items-center justify-center gap-2"></div>
+
+            <!-- Next Question Button -->
+            <div class="flex justify-center">
+                <button id="next-btn" onclick="nextQuestion()" class="hidden bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xl py-3.5 px-10 rounded-2xl border-b-4 border-emerald-700 transition active:scale-95 shadow-lg flex items-center gap-3">
+                    <span>السُّؤَالُ التَّالِي</span>
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="hidden p-8 text-center animate__animated animate__fadeIn">
+            <div class="text-7xl mb-4 animate__animated animate__bounce">🏆</div>
+            
+            <h2 class="text-3xl font-black text-slate-800 mb-2">مَبْرُوك يا بَطَل! 🎉</h2>
+            <p class="text-slate-600 text-lg mb-6 font-bold">أَكْمَلْتَ الجَوْلَةَ بِنَجَاح!</p>
+
+            <div class="bg-amber-50 p-6 rounded-3xl border-4 border-amber-200 max-w-xs mx-auto mb-8">
+                <p class="text-slate-500 font-bold mb-1">نَتِيجَتُكَ النِّهَائِيَّةُ</p>
+                <div class="text-5xl font-black text-amber-600" id="final-score">0 / 10</div>
+            </div>
+
+            <button onclick="restartQuiz()" class="bg-amber-500 hover:bg-amber-600 text-white font-black text-xl py-4 px-10 rounded-2xl border-b-4 border-amber-700 transition active:scale-95 shadow-lg inline-flex items-center gap-3">
+                <i class="fa-solid fa-rotate-right"></i>
+                <span>الـلَّعِبُ مَرَّةً أُخْرَى</span>
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        // Lion SVG inline data URL for guaranteed presentation
+        const lionSvg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦁</text></svg>";
+
+        // Dictionary for clean letter speech names
+        const letterNames = {
+            "أ": "حَرْفُ الأَلِف",
+            "ب": "حَرْفُ البَاء",
+            "ت": "حَرْفُ التَّاء",
+            "ث": "حَرْفُ الثَّاء",
+            "ج": "حَرْفُ الجِيم",
+            "ح": "حَرْفُ الحَاء",
+            "خ": "حَرْفُ الخَاء",
+            "د": "حَرْفُ الدَّال",
+            "ذ": "حَرْفُ الذَّال",
+            "ر": "حَرْفُ الرَّاء",
+            "ز": "حَرْفُ الزَّاي",
+            "س": "حَرْفُ السِّين",
+            "ش": "حَرْفُ الشِّين",
+            "ص": "حَرْفُ الصَّاد",
+            "ض": "حَرْفُ الضَّاد",
+            "ط": "حَرْفُ الطَّاء",
+            "ظ": "حَرْفُ الظَّاء",
+            "ع": "حَرْفُ العَيْن",
+            "غ": "حَرْفُ الغَيْن",
+            "ف": "حَرْفُ الفَاء",
+            "ق": "حَرْفُ القَاف",
+            "ك": "حَرْفُ الكَاف",
+            "ل": "حَرْفُ اللاَّم",
+            "م": "حَرْفُ المِيم",
+            "ن": "حَرْفُ النُّون",
+            "هـ": "حَرْفُ الهَاء",
+            "و": "حَرْفُ الوَاو",
+            "ي": "حَرْفُ اليَاء"
+        };
+
+        // 10 Kid-friendly questions with reliable icons
+        const questions = [
+            {
+                word: "أَسَد",
+                correctLetter: "أ",
+                options: ["أ", "ب", "ت"],
+                image: lionSvg
+            },
+            {
+                word: "بَطَّة",
+                correctLetter: "ب",
+                options: ["ث", "ب", "ن"],
+                image: "https://img.icons8.com/3d-fluency/375/duck.png"
+            },
+            {
+                word: "تُفَّاحَة",
+                correctLetter: "ت",
+                options: ["ب", "ت", "ج"],
+                image: "https://img.icons8.com/3d-fluency/375/apple.png"
+            },
+            {
+                word: "ثَعْلَب",
+                correctLetter: "ث",
+                options: ["ت", "س", "ث"],
+                image: "https://img.icons8.com/3d-fluency/375/fox.png"
+            },
+            {
+                word: "جَمَل",
+                correctLetter: "ج",
+                options: ["ج", "ح", "خ"],
+                image: "https://img.icons8.com/3d-fluency/375/camel.png"
+            },
+            {
+                word: "زَرَافَة",
+                correctLetter: "ز",
+                options: ["ر", "ز", "د"],
+                image: "https://img.icons8.com/3d-fluency/375/giraffe.png"
+            },
+            {
+                word: "سَمَكَة",
+                correctLetter: "س",
+                options: ["ش", "ص", "س"],
+                image: "https://img.icons8.com/3d-fluency/375/fish.png"
+            },
+            {
+                word: "شَمْس",
+                correctLetter: "ش",
+                options: ["ش", "س", "ض"],
+                image: "https://img.icons8.com/3d-fluency/375/sun.png"
+            },
+            {
+                word: "قَمَر",
+                correctLetter: "ق",
+                options: ["ك", "ق", "ف"],
+                image: "https://img.icons8.com/3d-fluency/375/full-moon.png"
+            },
+            {
+                word: "تِمْسَاح",
+                correctLetter: "ت",
+                options: ["ط", "د", "ت"],
+                image: "https://img.icons8.com/3d-fluency/375/crocodile.png"
+            }
+        ];
+
+        let currentIndex = 0;
+        let score = 0;
+        let isAnswered = false;
+
+        const questionNumberEl = document.getElementById("question-number");
+        const scoreCountEl = document.getElementById("score-count");
+        const progressBarEl = document.getElementById("progress-bar");
+        const imageDisplay = document.getElementById("image-display");
+        const wordLabel = document.getElementById("word-label");
+        const optionsContainer = document.getElementById("options-container");
+        const feedbackMsg = document.getElementById("feedback-msg");
+        const nextBtn = document.getElementById("next-btn");
+        const quizScreen = document.getElementById("quiz-screen");
+        const resultScreen = document.getElementById("result-screen");
+
+        function loadQuestion() {
+            isAnswered = false;
+            nextBtn.classList.add("hidden");
+            feedbackMsg.innerHTML = "";
+
+            // Stop any active speech when switching questions
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+
+            const q = questions[currentIndex];
+
+            // Updates UI Text
+            questionNumberEl.textContent = `السُّؤَالُ ${currentIndex + 1} مِنْ ${questions.length}`;
+            scoreCountEl.textContent = `⭐ النِّقَاطُ: ${score}`;
+            
+            // Progress Bar Width
+            const progress = ((currentIndex + 1) / questions.length) * 100;
+            progressBarEl.style.width = `${progress}%`;
+
+            // Image & Word Text
+            imageDisplay.src = q.image;
+            wordLabel.innerHTML = `${q.word} <i class="fa-solid fa-volume-high text-sm mr-1"></i>`;
+
+            // Render Options
+            optionsContainer.innerHTML = "";
+            q.options.forEach((letter) => {
+                const btn = document.createElement("button");
+                btn.className = "btn-kid bg-white border-4 border-amber-300 text-amber-600 hover:bg-amber-50 font-black text-4xl py-6 rounded-3xl transition flex items-center justify-center";
+                btn.onclick = () => handleAnswer(letter, btn);
+                btn.textContent = letter;
+                optionsContainer.appendChild(btn);
+            });
+
+            // Speak question formula ONCE automatically, then stop and wait for child's input
+            setTimeout(() => {
+                speakCurrentQuestion();
+            }, 350);
+        }
+
+        function handleAnswer(selectedLetter, button) {
+            if (isAnswered) return;
+            isAnswered = true;
+
+            const q = questions[currentIndex];
+            const allButtons = optionsContainer.querySelectorAll("button");
+            allButtons.forEach(b => b.disabled = true);
+
+            // Spoken Letter Name for clear auditory confirmation
+            const spokenLetterName = letterNames[selectedLetter] || selectedLetter;
+
+            if (selectedLetter === q.correctLetter) {
+                // Correct Answer
+                score += 1;
+                scoreCountEl.textContent = `⭐ النِّقَاطُ: ${score}`;
+                
+                button.classList.remove("border-amber-300", "text-amber-600", "bg-white");
+                button.classList.add("bg-emerald-500", "border-emerald-600", "text-white", "animate__animated", "animate__rubberBand");
+                
+                feedbackMsg.innerHTML = `<span class="text-emerald-600 text-2xl">أَحْسَنْتَ! إِجَابَةٌ صَحِيحَةٌ 🥳 🎉</span>`;
+                speakText(`${spokenLetterName}! أحسنت! إجابة صحيحة`);
+            } else {
+                // Wrong Answer
+                button.classList.remove("border-amber-300", "text-amber-600", "bg-white");
+                button.classList.add("bg-rose-500", "border-rose-600", "text-white", "animate__animated", "animate__shakeX");
+
+                // Highlight correct button
+                allButtons.forEach(b => {
+                    if (b.textContent === q.correctLetter) {
+                        b.classList.remove("border-amber-300", "text-amber-600");
+                        b.classList.add("bg-emerald-400", "border-emerald-600", "text-white");
+                    }
+                });
+
+                feedbackMsg.innerHTML = `<span class="text-rose-500 text-2xl">حَاوِلْ مَرَّةً أُخْرَى 😅</span>`;
+                speakText(`${spokenLetterName}. حاول مرة أخرى`);
+            }
+
+            // Show Next Button
+            nextBtn.classList.remove("hidden");
+            if (currentIndex === questions.length - 1) {
+                nextBtn.querySelector("span").textContent = "عَرْضُ النَّتِيجَةِ";
+            }
+        }
+
+        function nextQuestion() {
+            if (currentIndex < questions.length - 1) {
+                currentIndex++;
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            quizScreen.classList.add("hidden");
+            resultScreen.classList.remove("hidden");
+            document.getElementById("final-score").textContent = `${score} / ${questions.length}`;
+
+            if (score >= 7) {
+                speakText(`رائع جدا يا بطل! حصلت على ${score} من 10`);
+            } else {
+                speakText(`أحسنت! حاول مرة أخرى لتحصل على النتيجة الكاملة.`);
+            }
+        }
+
+        function restartQuiz() {
+            currentIndex = 0;
+            score = 0;
+            resultScreen.classList.add("hidden");
+            quizScreen.classList.remove("hidden");
+            nextBtn.querySelector("span").textContent = "السُّؤَالُ التَّالِي";
+            loadQuestion();
+        }
+
+        // Speech Helper function
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // Clear previous speech stream
+
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'ar-SA';
+                utterance.rate = 0.85; // Clear natural speed
+
+                const wave = document.getElementById("sound-wave");
+                utterance.onstart = () => { if (wave) wave.classList.remove("hidden"); };
+                utterance.onend = () => { if (wave) wave.classList.add("hidden"); };
+                utterance.onerror = () => { if (wave) wave.classList.add("hidden"); };
+
+                let voices = window.speechSynthesis.getVoices();
+                let arVoice = voices.find(v => v.lang.includes('ar'));
+                if (arVoice) {
+                    utterance.voice = arVoice;
+                }
+
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Reads ONLY "ما هو الحرف الأول لـ [الكلمة]؟" and stops.
+        function speakCurrentQuestion() {
+            const q = questions[currentIndex];
+            speakText(`ما هو الحرف الأول لـ ${q.word}؟`);
+        }
+
+        function speakWord() {
+            const q = questions[currentIndex];
+            speakText(q.word);
+        }
+
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = () => {
+                window.speechSynthesis.getVoices();
+            };
+        }
+
+        window.onload = loadQuestion;
+    </script>
+</body>
+</html>
